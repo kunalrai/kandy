@@ -15,7 +15,7 @@
     $(function() {
 
         function loadContacts() {
-
+            var tempUserarray=[];
             /** retrievePersonalAddressBook(success, failure)
              Retrieve all entries of the user's personal address book
              @params <function> success, <function> failure
@@ -39,6 +39,7 @@
                         $li.val(entry.contact_user_name);
                         $li.append($a);
                         $users.append($li);
+                        tempUserarray.push(entry.contact_user_name);
                     });
                 } else {
                     alert('Sorry, you have no contacts in your address book');
@@ -46,12 +47,15 @@
             }, function () {
                 alert('Error - something went wrong when we tried to access your address book.');
             });
+
         }
 
 // Event handler for send message button
         $('#chat-btn').on('click', function() {
             sendMessage();
         });
+
+
 
 
         var callId, username;
