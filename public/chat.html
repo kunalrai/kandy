@@ -8,6 +8,7 @@
     <link rel="stylesheet" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css" />
     <!--Load Kandy JS files --><script src="https://code.jquery.com/jquery-1.7.2.min.js"></script>
     <script src="https://kandy-portal.s3.amazonaws.com/public/javascript/kandy/2.3.0/kandy.js"></script>
+    <script src="../public/lib/moment.js" type="text/javascript"></script>
     <link rel="stylesheet" media="screen" href="../public/css/chat.css" />
     <title></title>
 </head>
@@ -200,6 +201,7 @@
 
                         userArray.push(username);
                         kandy.getLastSeen(userArray);
+                        kandy.getLastSeen(['nehak@acidcorp1.crmnext.in'],function(result){console.log(JSON.stringify( result));})
                         UIState.authenticated();
                         loadContacts();
                     },
