@@ -10,9 +10,9 @@ var ChatBox = React.createClass({
   componentDidMount: function () {
     this.chatProxy = this.props.chatProxy;
     this.chatProxy.connect(this.props.username);
-    this.chatProxy.onMessage(this.addMessage.bind(this));
-    this.chatProxy.onUserConnected(this.userConnected.bind(this));
-    this.chatProxy.onUserDisconnected(this.userDisconnected.bind(this));
+    this.chatProxy.onMessage(this.addMessage);
+    this.chatProxy.onUserConnected(this.userConnected);
+    this.chatProxy.onUserDisconnected(this.userDisconnected);
   },
 
   userConnected: function (user) {
@@ -50,7 +50,7 @@ var ChatBox = React.createClass({
   render: function () {
     return (
       <div className="chat-box" ref="root">
-        <div className="chat-header ui-widget-header">React p2p Chat</div>
+        <div className="chat-header ui-widget-header">Chat</div>
         <div className="chat-content-wrapper row">
           <MessagesList ref="messagesList"></MessagesList>
           <UsersList users={this.state.users} ref="usersList"></UsersList>
