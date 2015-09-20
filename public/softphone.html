@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Kandy | Make a Video Call</title>
+    <title>All</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta name="csrf-param" content="authenticity_token" />
     <meta name="csrf-token" content="+O7O2ijGu7o8DIoQylQLtBDBp6TRQ9t6wxGKGItVsf+QDrRFx9wUcW38p6a00ZYpEcqCojvQRiOzddM36gyyUg==" />
@@ -20,6 +20,40 @@
 
     <script type="text/javascript">
         $(function() {
+
+            function loadContacts() {
+
+                /** retrievePersonalAddressBook(success, failure)
+                 Retrieve all entries of the user's personal address book
+                 @params <function> success, <function> failure
+                 */
+                kandy.addressbook.retrievePersonalAddressBook(function(results) {
+
+                    // results object is an array of address book entries sent by Kandy
+                    // on successful address book retrieval
+                    if (results.length) {
+
+                        // Iterate through entries and append contacts to DOM
+                        results.forEach(function(entry) {
+                            var $option = $('<option>');
+
+                            $option.val(entry.contact_user_name).text(entry.contact_user_name);
+                            $('#chat-contacts').append($option);
+                        });
+                    } else {
+                        alert('Sorry, you have no contacts in your address book');
+                    }
+                }, function () {
+                    alert('Error - something went wrong when we tried to access your address book.');
+                });
+            }
+
+            // Event handler for send message button
+            $('#chat-btn').on('click', function() {
+                sendMessage();
+            });
+
+
             var callId, username;
 
             // Create audio objects to play incoming calls and outgoing calls sound
@@ -64,10 +98,50 @@
                     callendfailed: onCallEndedFailed,
                     callincoming: onCallIncoming,
                     callanswered: onCallAnswer,
-                    callrejected: onCallRejected
+                    callrejected: onCallRejected,
+                    message: onMessagesAvailable
                 }
             });
+            // Function to send message to another Kandy user
+            function sendMessage() {
+                var message = $('#chat-message').val();
+                var sendTo = $('#chat-contacts').val();
 
+                /** sendIm(userName, message, success, failure)
+                 Sends a message via chat
+                 @params <string> userName, <string> message, <function> success/failure
+                 */
+                kandy.messaging.sendIm(sendTo, message, function () {
+
+                            // On successful send, append chat item to DOM
+                            $('#chat-message').val('');
+                            var $chatItem = $('<div class="well text-right">')
+                            var $username = $('<h5>').text(username);
+                            var $message = $('<p>').text(message);
+
+                            $chatItem.append($username, $message);
+                            $('#chat-messages').append($chatItem);
+                        },
+                        function () {
+                            alert('IM send failed');
+                        }
+                );
+            }
+            // Event handler for messagesavailable
+            // receive messages from other Kandy users
+            function onMessagesAvailable(message){
+
+
+                if(message.messageType == 'chat' && message.contentType === 'text' && message.message.mimeType == 'text/plain') {
+                    var $username = $('<h5>').text(message.sender.user_id);
+                    var $message = $('<p>').text(message.message.text);
+                    var $chatItem = $('<div class="well text-left">')
+
+                    $chatItem.append($username, $message);
+                    $('#chat-messages').append($chatItem);
+                }
+
+            }
             // Event handler for callendedfailed event
             function onCallEndedFailed() {
                 console.debug('callendfailed');
@@ -122,6 +196,7 @@
                             userArray.push(username);
                             kandy.getLastSeen(userArray);
                             UIState.authenticated();
+                            loadContacts();
                         },
                         function(msg){
                             UIState.unauthenticated();
@@ -289,7 +364,7 @@
         <div class="col-xs-8 col-xs-offset-2" id="activity-container">
             <div id="app-details">
                 <h1 class="h2">
-                    Make a Video Call
+                   Demo
                 </h1>
                 <p>
 
@@ -297,16 +372,19 @@
             </div>
 
             <form id="login-form" class="simple_form form-horizontal" novalidate="novalidate" action="" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="M9VGBsWJnG/wuIqCFeECv9PQjka04LXVBR6CRaGKvfJbNTyZKpMzpKFIpzRrZJ8i0turQF5zKIx1ettqwNO+Xw==" />
-
-                <div class="form-group string required quick_start_login_username"><label class="string required col-sm-3 control-label" for="username"><abbr title="required">*</abbr> Username</label><div class="col-sm-9"><input id="username" name="username" class="string required form-control" type="text" /></div></div>
-
-
+                <div class="form-group string required quick_start_login_username">
+                    <label class="string required col-sm-3 control-label" for="username">
+                        <abbr title="required">*</abbr> Username</label>
+                    <div class="col-sm-9">
+                        <input id="username" name="username" class="string required form-control" type="text" />
+                    </div>
+                </div>
                 <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-9">
                         <input type="submit" name="commit" value="Login" id="login-btn" class="btn btn-success" />
-
                     </div>
-                </div></form>
+                </div>
+            </form>
             <div class="hidden" id="logged-in">
                 <hr />
                 <div class="clearfix">
@@ -368,6 +446,26 @@
                     <button class="btn btn-danger" id="end-call-btn">End Call</button><button class="btn btn-warning" id="hold-call-btn">Hold Call</button><button class="btn btn-success hidden" id="resume-call-btn">Resume Call</button>
                 </div>
             </div>
+                <div id="chat-container">
+                    <h3>
+                        Messages
+                    </h3>
+                    <div id="chat-messages"></div>
+                    <hr />
+                    <div id="chat-input">
+                        <div class="form-group">
+                            <label for="chat-contacts">Select Contact</label>
+                            <select name="chat-contacts" id="chat-contacts" class="form-control"></select>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="chat-message">Chat Message</label>
+      <textarea name="chat-message" id="chat-message" class="form-control"></textarea>
+                        </div>
+                        <button name="button" type="submit" class="btn btn-success" id="chat-btn">Send</button>
+
+                    </div>
+                </div>
             </div>
         </div>
     </div>
